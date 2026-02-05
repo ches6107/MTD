@@ -70,7 +70,7 @@
                 width: 95px !important; 
                 margin-right: 0.5rem !important;
             }
-            .label-text, .formula-label, .category-text, .result-text {
+            .label-text, .category-text, .result-text {
                 font-size: 1.15rem !important; 
             }
             .category-text {
@@ -79,14 +79,6 @@
             }
             .result-text {
                 margin-left: 0.5rem !important;
-            }
-            /* 重新整理圖示按鈕樣式 - 再次縮小 */
-            .reset-btn {
-                width: 32px !important;
-                height: 32px !important;
-                margin-left: 0.5rem !important;
-                padding: 5px !important;
-                border-width: 1px !important;
             }
             .space-y-4 {
                 margin-top: 0.5rem;
@@ -110,12 +102,6 @@
         .label-text {
             font-family: "Microsoft JhengHei", sans-serif;
             font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .formula-label {
-            font-family: "Times New Roman", Times, serif;
-            font-size: 1.75rem;
             font-weight: bold;
         }
         
@@ -161,35 +147,6 @@
             transform: skewX(-15deg);
             margin: 0 1px;
         }
-
-        /* 圖示按鈕樣式 */
-        .reset-btn {
-            background-color: transparent;
-            border: 1.5px solid #ef4444;
-            color: #ef4444;
-            width: 36px;
-            height: 36px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            margin-left: 0.8rem;
-            flex-shrink: 0;
-            touch-action: manipulation;
-            cursor: pointer;
-        }
-        
-        .reset-btn:active {
-            transform: scale(0.9);
-            background-color: #fee2e2;
-        }
-
-        .reset-btn svg {
-            width: 85%;
-            height: 85%;
-            fill: currentColor;
-        }
     </style>
 </head>
 <body class="bg-white">
@@ -197,17 +154,12 @@
     <div class="main-container p-2 sm:p-6" id="appContainer">
         <div class="max-w-3xl w-full flex flex-col items-center">
             <div class="space-y-4 sm:space-y-10 w-full">
-                <!-- Row 1: 落絲數 (X) + 重新整理圖示按鈕 -->
+                <!-- Row 1: 落絲數 (X) -->
                 <div class="flex items-center">
                     <div class="label-container">
                         <span class="label-text">落絲數</span>
                     </div>
-                    <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
-                    <button onclick="resetAll()" class="reset-btn" title="重新整理">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                        </svg>
-                    </button>
+                    <input type="number" id="inputX" class="input-box" value="0" oninput="handleInput(this, 'inputA')" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                 </div>
 
                 <!-- Row 2: 斷絲數 (a) -->
@@ -215,7 +167,7 @@
                     <div class="label-container">
                         <span class="label-text">斷絲數</span>
                     </div>
-                    <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
+                    <input type="number" id="inputA" class="input-box" value="0" oninput="handleInput(this, 'inputB')" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">MTD</span>
                     <span class="result-text" id="resA">
                         <div class="fraction-container">
@@ -227,12 +179,12 @@
                     </span>
                 </div>
 
-                <!-- Row 3: IP數 (b) -->
+                <!-- Row 3: IP 數 (b) -->
                 <div class="flex items-center">
                     <div class="label-container">
                         <span class="label-text">IP 數</span>
                     </div>
-                    <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
+                    <input type="number" id="inputB" class="input-box" value="0" oninput="handleInput(this, null)" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">M</span>
                     <span class="result-text" id="resB">
                         <div class="fraction-container">
@@ -244,10 +196,9 @@
                     </span>
                 </div>
 
-                <!-- Row 4: c -->
+                <!-- Row 4: 第四列 -->
                 <div class="flex items-center">
                     <div class="label-container">
-                        <span class="formula-label">c</span>
                     </div>
                     <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">P</span>
@@ -266,22 +217,34 @@
 
     <script>
         function preventJump() {
-            // 強制重置滾動位置，消除鍵盤彈出產生的位移
             window.scrollTo(0, 0);
             document.body.scrollTop = 0;
         }
 
         function handleFocus(el) {
+            // 如果點擊的是落絲數，將第四格數值改為 0
+            if (el.id === 'inputX') {
+                const elC = document.getElementById('inputC');
+                if (elC) elC.value = 0;
+            }
+            
             el.value = '';
             preventJump();
+            calculate(); // 點擊時同步更新顯示
         }
 
-        function resetAll() {
-            document.getElementById('inputX').value = 0;
-            document.getElementById('inputA').value = 0;
-            document.getElementById('inputB').value = 0;
-            document.getElementById('inputC').value = 0;
+        function handleInput(currentEl, nextId) {
             calculate();
+            
+            // 當輸入一個數字後自動跳轉
+            if (currentEl.value.length >= 1 && nextId) {
+                setTimeout(() => {
+                    const nextEl = document.getElementById(nextId);
+                    if (nextEl) {
+                        nextEl.focus();
+                    }
+                }, 300); 
+            }
         }
 
         function calculate() {
@@ -356,9 +319,8 @@
                 preventJump();
             }, { passive: false });
 
-            // 徹底禁止觸摸滑動，避免橡皮筋與跳動
             document.addEventListener('touchmove', (e) => {
-                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                if (e.target.tagName !== 'INPUT') {
                     e.preventDefault();
                 }
             }, { passive: false });
