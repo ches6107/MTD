@@ -22,6 +22,29 @@
             font-size: 1.5rem;
             font-weight: bold;
             outline: none;
+            border-radius: 4px;
+        }
+        /* 針對手機端的優化 */
+        @media (max-width: 640px) {
+            .input-box {
+                width: 80px;
+                height: 45px;
+                font-size: 1.25rem;
+            }
+            .label-container {
+                width: 90px !important;
+                margin-right: 0.5rem !important;
+            }
+            .label-text, .formula-label, .category-text, .result-text {
+                font-size: 1.1rem !important;
+            }
+            .category-text {
+                min-width: 60px !important;
+                margin-left: 0.5rem !important;
+            }
+            .result-text {
+                margin-left: 0.5rem !important;
+            }
         }
         .input-box:focus {
             background-color: #f0fdf4;
@@ -63,24 +86,24 @@
         }
     </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-white min-h-screen flex items-center justify-center p-2">
 
-    <div class="max-w-3xl w-full p-6">
-        <div class="space-y-10">
+    <div class="max-w-3xl w-full p-2 sm:p-6">
+        <div class="space-y-6 sm:space-y-10">
             <!-- Row 1: 落絲數 (X) -->
             <div class="flex items-center">
                 <div class="label-container">
                     <span class="label-text">落絲數</span>
                 </div>
-                <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()">
+                <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" pattern="\d*">
             </div>
 
-            <!-- Row 2: 斷絲數 (a) - 顯示 a/X 但計算為 (X-a)/X -->
+            <!-- Row 2: 斷絲數 (a) -->
             <div class="flex items-center">
                 <div class="label-container">
                     <span class="label-text">斷絲數</span>
                 </div>
-                <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()">
+                <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" pattern="\d*">
                 <span class="category-text">MTD</span>
                 <span class="result-text" id="resA"><span id="valA">0</span>/<span class="valX">0</span> = 0 %</span>
             </div>
@@ -90,7 +113,7 @@
                 <div class="label-container">
                     <span class="label-text">IP 數</span>
                 </div>
-                <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()">
+                <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" pattern="\d*">
                 <span class="category-text">M</span>
                 <span class="result-text" id="resB"><span id="valB">0</span>/<span class="valX">0</span> = 0 %</span>
             </div>
@@ -100,7 +123,7 @@
                 <div class="label-container">
                     <span class="formula-label">c</span>
                 </div>
-                <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()">
+                <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" pattern="\d*">
                 <span class="category-text">P</span>
                 <span class="result-text" id="resC"><span id="valC">0</span>/<span class="valX">0</span> = 0 %</span>
             </div>
@@ -141,9 +164,7 @@
             if (dValC) dValC.innerText = cVal;
 
             // 執行計算
-            // 斷絲數：計算邏輯維持 (X-a)/X，但顯示方式改為 a/X
             updateResultDisplay('resA', 'special', a, x, xVal, aVal);
-            // 其他：維持 b/X
             updateResultDisplay('resB', 'normal', b, x, xVal, bVal);
             updateResultDisplay('resC', 'normal', c, x, xVal, cVal);
         }
@@ -165,7 +186,6 @@
                     result = (val / total) * 100;
                 }
                 
-                // 顯示方式統一為：數字/數字 = 結果 %
                 const displayNum = parseFloat(result.toFixed(1));
                 element.innerHTML = `${valStr}/${totalStr} = ${displayNum} %`;
                 element.style.color = "#1e40af";
