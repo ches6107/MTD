@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>比例計算工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .input-box {
+            border: 3px solid black;
+            width: 100px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            outline: none;
+        }
+        .input-box:focus {
+            background-color: #f0fdf4;
+            border-color: #22c55e;
+        }
+        /* 標籤容器：確保內容上下左右居中 */
+        .label-container {
+            width: 120px; 
+            height: 50px; 
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            margin-right: 1rem;
+        }
+        .label-text {
+            font-family: "Microsoft JhengHei", sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .formula-label {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.75rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .category-text {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.5rem;
+            min-width: 80px;
+            margin-left: 1rem;
+        }
+        .result-text {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.5rem;
+            color: #1e40af;
+            margin-left: 1rem;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
 
+    <div class="max-w-3xl w-full p-6">
+        <div class="space-y-10">
+            <!-- Row 1: 落絲數 (X) -->
+            <div class="flex items-center">
+                <div class="label-container">
+                    <span class="label-text">落絲數</span>
+                </div>
+                <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()">
+            </div>
+
+            <!-- Row 2: 斷絲數 (a) - 顯示 a/X 但計算為 (X-a)/X -->
+            <div class="flex items-center">
+                <div class="label-container">
+                    <span class="label-text">斷絲數</span>
+                </div>
+                <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()">
+                <span class="category-text">MTD</span>
+                <span class="result-text" id="resA"><span id="valA">0</span>/<span class="valX">0</span> = 0 %</span>
+            </div>
+
+            <!-- Row 3: IP數 (b) -->
+            <div class="flex items-center">
+                <div class="label-container">
+                    <span class="label-text">IP 數</span>
+                </div>
+                <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()">
+                <span class="category-text">M</span>
+                <span class="result-text" id="resB"><span id="valB">0</span>/<span class="valX">0</span> = 0 %</span>
+            </div>
+
+            <!-- Row 4: c -->
+            <div class="flex items-center">
+                <div class="label-container">
+                    <span class="formula-label">c</span>
+                </div>
+                <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()">
+                <span class="category-text">P</span>
+                <span class="result-text" id="resC"><span id="valC">0</span>/<span class="valX">0</span> = 0 %</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const elX = document.getElementById('inputX');
+            const elA = document.getElementById('inputA');
+            const elB = document.getElementById('inputB');
+            const elC = document.getElementById('inputC');
+
+            if (!elX || !elA || !elB || !elC) return;
+
+            const xVal = elX.value || "0";
+            const aVal = elA.value || "0";
+            const bVal = elB.value || "0";
+            const cVal = elC.value || "0";
+
+            const x = parseFloat(xVal) || 0;
+            const a = parseFloat(aVal) || 0;
+            const b = parseFloat(bVal) || 0;
+            const c = parseFloat(cVal) || 0;
+
+            // 更新公式中的數值顯示
+            const xDisplays = document.querySelectorAll('.valX');
+            xDisplays.forEach(el => {
+                if (el) el.innerText = xVal;
+            });
+            
+            const dValA = document.getElementById('valA');
+            const dValB = document.getElementById('valB');
+            const dValC = document.getElementById('valC');
+            
+            if (dValA) dValA.innerText = aVal;
+            if (dValB) dValB.innerText = bVal;
+            if (dValC) dValC.innerText = cVal;
+
+            // 執行計算
+            // 斷絲數：計算邏輯維持 (X-a)/X，但顯示方式改為 a/X
+            updateResultDisplay('resA', 'special', a, x, xVal, aVal);
+            // 其他：維持 b/X
+            updateResultDisplay('resB', 'normal', b, x, xVal, bVal);
+            updateResultDisplay('resC', 'normal', c, x, xVal, cVal);
+        }
+
+        function updateResultDisplay(elementId, mode, val, total, totalStr, valStr) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            if (total === 0) {
+                element.innerHTML = `${valStr}/${totalStr} = 0 %`;
+                element.style.color = "#94a3b8";
+            } else {
+                let result;
+                if (mode === 'special') {
+                    // 運算原理不變：(落絲數 - 斷絲數) / 落絲數
+                    result = ((total - val) / total) * 100;
+                } else {
+                    // 一般公式：變數 / 落絲數
+                    result = (val / total) * 100;
+                }
+                
+                // 顯示方式統一為：數字/數字 = 結果 %
+                const displayNum = parseFloat(result.toFixed(1));
+                element.innerHTML = `${valStr}/${totalStr} = ${displayNum} %`;
+                element.style.color = "#1e40af";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            calculate();
+        });
+    </script>
+</body>
+</html>
