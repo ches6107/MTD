@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>比例計算工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -24,10 +24,18 @@
             outline: none;
             border-radius: 4px;
         }
+        /* 固定容器高度，防止內容變動引起整體抖動 */
+        .main-container {
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         /* 針對手機端的優化 */
         @media (max-width: 640px) {
-            body {
-                align-items: flex-start !important;
+            .main-container {
+                justify-content: flex-start !important;
                 padding-top: 1.5rem !important;
             }
             .input-box {
@@ -91,6 +99,7 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
+            min-height: 50px; /* 固定最小高度，防止文字變動時垂直撐開 */
         }
         /* 分數視覺效果：左上至右下 */
         .fraction-container {
@@ -125,77 +134,81 @@
             transition: background-color 0.2s;
             margin-left: 136px;
             align-self: flex-start;
+            flex-shrink: 0;
         }
         .reset-btn:hover {
             background-color: #dc2626;
         }
     </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-2">
+<body class="bg-white">
 
-    <div class="max-w-3xl w-full p-2 sm:p-6 flex flex-col items-center">
-        <button onclick="resetAll()" class="reset-btn">
-            重新計算 (全部歸零)
-        </button>
+    <div class="main-container p-2 sm:p-6">
+        <div class="max-w-3xl w-full flex flex-col items-center">
+            <!-- 重新整理按鈕 -->
+            <button onclick="resetAll()" class="reset-btn">
+                重新計算 (全部歸零)
+            </button>
 
-        <div class="space-y-6 sm:space-y-10 w-full">
-            <!-- Row 1: 落絲數 (X) -->
-            <div class="flex items-center">
-                <div class="label-container">
-                    <span class="label-text">落絲數</span>
-                </div>
-                <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
-            </div>
-
-            <!-- Row 2: 斷絲數 (a) -->
-            <div class="flex items-center">
-                <div class="label-container">
-                    <span class="label-text">斷絲數</span>
-                </div>
-                <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
-                <span class="category-text">MTD</span>
-                <span class="result-text" id="resA">
-                    <div class="fraction-container">
-                        <span class="num-top" id="valA">0</span>
-                        <span class="slash">/</span>
-                        <span class="num-bottom valX">0</span>
+            <div class="space-y-6 sm:space-y-10 w-full">
+                <!-- Row 1: 落絲數 (X) -->
+                <div class="flex items-center">
+                    <div class="label-container">
+                        <span class="label-text">落絲數</span>
                     </div>
-                    <span class="percent-val">= 0 %</span>
-                </span>
-            </div>
-
-            <!-- Row 3: IP數 (b) -->
-            <div class="flex items-center">
-                <div class="label-container">
-                    <span class="label-text">IP 數</span>
+                    <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
                 </div>
-                <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
-                <span class="category-text">M</span>
-                <span class="result-text" id="resB">
-                    <div class="fraction-container">
-                        <span class="num-top" id="valB">0</span>
-                        <span class="slash">/</span>
-                        <span class="num-bottom valX">0</span>
-                    </div>
-                    <span class="percent-val">= 0 %</span>
-                </span>
-            </div>
 
-            <!-- Row 4: c -->
-            <div class="flex items-center">
-                <div class="label-container">
-                    <span class="formula-label">c</span>
-                </div>
-                <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
-                <span class="category-text">P</span>
-                <span class="result-text" id="resC">
-                    <div class="fraction-container">
-                        <span class="num-top" id="valC">0</span>
-                        <span class="slash">/</span>
-                        <span class="num-bottom valX">0</span>
+                <!-- Row 2: 斷絲數 (a) -->
+                <div class="flex items-center">
+                    <div class="label-container">
+                        <span class="label-text">斷絲數</span>
                     </div>
-                    <span class="percent-val">= 0 %</span>
-                </span>
+                    <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
+                    <span class="category-text">MTD</span>
+                    <span class="result-text" id="resA">
+                        <div class="fraction-container">
+                            <span class="num-top" id="valA">0</span>
+                            <span class="slash">/</span>
+                            <span class="num-bottom valX">0</span>
+                        </div>
+                        <span class="percent-val">= 0 %</span>
+                    </span>
+                </div>
+
+                <!-- Row 3: IP數 (b) -->
+                <div class="flex items-center">
+                    <div class="label-container">
+                        <span class="label-text">IP 數</span>
+                    </div>
+                    <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
+                    <span class="category-text">M</span>
+                    <span class="result-text" id="resB">
+                        <div class="fraction-container">
+                            <span class="num-top" id="valB">0</span>
+                            <span class="slash">/</span>
+                            <span class="num-bottom valX">0</span>
+                        </div>
+                        <span class="percent-val">= 0 %</span>
+                    </span>
+                </div>
+
+                <!-- Row 4: c -->
+                <div class="flex items-center">
+                    <div class="label-container">
+                        <span class="formula-label">c</span>
+                    </div>
+                    <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" onfocus="this.value=''" pattern="\d*">
+                    <span class="category-text">P</span>
+                    <span class="result-text" id="resC">
+                        <div class="fraction-container">
+                            <span class="num-top" id="valC">0</span>
+                            <span class="slash">/</span>
+                            <span class="num-bottom valX">0</span>
+                        </div>
+                        <span class="percent-val">= 0 %</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
