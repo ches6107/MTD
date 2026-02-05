@@ -6,15 +6,17 @@
     <title>比例計算工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 鎖定基礎容器，禁止橡皮筋效果與非預期捲動 */
+        /* 徹底鎖定底層，防止鍵盤彈出時的位移 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
+            position: fixed; /* 強化固定效果 */
             background-color: white;
-            touch-action: none; /* 禁用所有手勢，防止頁面被拖動 */
+            touch-action: none;
+            -webkit-text-size-adjust: 100%;
         }
 
         input::-webkit-outer-spin-button,
@@ -25,7 +27,7 @@
         
         input[type=number] {
             -moz-appearance: textfield;
-            font-size: 16px; /* 至少 16px 防止 iOS 自動放大 */
+            font-size: 16px; /* 防止 iOS 點擊時自動放大頁面 */
         }
         
         .input-box {
@@ -40,7 +42,7 @@
             transition: background-color 0.1s;
         }
         
-        /* 主要容器使用絕對定位撐滿 */
+        /* 容器佈局 */
         .main-container {
             position: absolute;
             top: 0;
@@ -52,34 +54,39 @@
             align-items: center;
             overflow: hidden;
             background-color: white;
-            z-index: 10;
         }
 
+        /* 手機版微調：縮小字體與間距以避免被鍵盤遮擋 */
         @media (max-width: 640px) {
             .main-container {
-                padding-top: 1.5rem !important;
+                padding-top: 1rem !important;
             }
             .input-box {
-                width: 80px;
-                height: 45px;
-                font-size: 1.25rem;
+                width: 75px;
+                height: 40px;
+                font-size: 1.1rem;
             }
             .label-container {
-                width: 90px !important;
-                margin-right: 0.5rem !important;
+                width: 80px !important;
+                margin-right: 0.4rem !important;
             }
             .label-text, .formula-label, .category-text, .result-text {
-                font-size: 1.1rem !important;
+                font-size: 1rem !important; /* 稍微縮小字體 */
             }
             .category-text {
-                min-width: 60px !important;
-                margin-left: 0.5rem !important;
+                min-width: 50px !important;
+                margin-left: 0.4rem !important;
             }
             .result-text {
-                margin-left: 0.5rem !important;
+                margin-left: 0.4rem !important;
             }
             .reset-btn {
-                margin-left: 98px !important;
+                margin-left: 84px !important;
+                padding: 6px 12px !important;
+                font-size: 0.9rem;
+            }
+            .space-y-6 {
+                margin-top: -0.5rem;
             }
         }
         
@@ -101,14 +108,12 @@
             font-family: "Microsoft JhengHei", sans-serif;
             font-size: 1.5rem;
             font-weight: bold;
-            line-height: 1;
         }
         
         .formula-label {
             font-family: "Times New Roman", Times, serif;
             font-size: 1.75rem;
             font-weight: bold;
-            line-height: 1;
         }
         
         .category-text {
@@ -134,24 +139,24 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 0 10px;
+            padding: 0 8px;
             font-weight: bold;
         }
         
         .num-top {
-            transform: translate(-2px, -8px);
-            font-size: 1.2rem;
+            transform: translate(-1px, -6px);
+            font-size: 1rem;
         }
         
         .num-bottom {
-            transform: translate(2px, 8px);
-            font-size: 1.2rem;
+            transform: translate(1px, 6px);
+            font-size: 1rem;
         }
         
         .slash {
-            font-size: 2rem;
+            font-size: 1.8rem;
             transform: skewX(-15deg);
-            margin: 0 2px;
+            margin: 0 1px;
         }
 
         .reset-btn {
@@ -160,7 +165,7 @@
             padding: 8px 16px;
             border-radius: 6px;
             font-weight: bold;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             transition: background-color 0.2s;
             margin-left: 136px;
             align-self: flex-start;
@@ -182,13 +187,13 @@
                 重新計算 (全部歸零)
             </button>
 
-            <div class="space-y-6 sm:space-y-10 w-full">
+            <div class="space-y-4 sm:space-y-10 w-full">
                 <!-- Row 1: 落絲數 (X) -->
                 <div class="flex items-center">
                     <div class="label-container">
                         <span class="label-text">落絲數</span>
                     </div>
-                    <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*">
+                    <input type="number" id="inputX" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                 </div>
 
                 <!-- Row 2: 斷絲數 (a) -->
@@ -196,7 +201,7 @@
                     <div class="label-container">
                         <span class="label-text">斷絲數</span>
                     </div>
-                    <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*">
+                    <input type="number" id="inputA" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">MTD</span>
                     <span class="result-text" id="resA">
                         <div class="fraction-container">
@@ -213,7 +218,7 @@
                     <div class="label-container">
                         <span class="label-text">IP 數</span>
                     </div>
-                    <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*">
+                    <input type="number" id="inputB" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">M</span>
                     <span class="result-text" id="resB">
                         <div class="fraction-container">
@@ -230,7 +235,7 @@
                     <div class="label-container">
                         <span class="formula-label">c</span>
                     </div>
-                    <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*">
+                    <input type="number" id="inputC" class="input-box" value="0" oninput="calculate()" onfocus="handleFocus(this)" pattern="\d*" inputmode="numeric">
                     <span class="category-text">P</span>
                     <span class="result-text" id="resC">
                         <div class="fraction-container">
@@ -246,15 +251,14 @@
     </div>
 
     <script>
-        // 禁止捲動的處理
         function preventJump() {
+            // 強制重置滾動位置，消除鍵盤彈出產生的位移
             window.scrollTo(0, 0);
             document.body.scrollTop = 0;
         }
 
         function handleFocus(el) {
             el.value = '';
-            // 立即執行一次防止跳動
             preventJump();
         }
 
@@ -328,21 +332,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             calculate();
             
-            // 針對行動裝置 Visual Viewport 的鎖定
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', preventJump);
                 window.visualViewport.addEventListener('scroll', preventJump);
             }
 
-            // 全域攔截
             window.addEventListener('scroll', (e) => {
                 e.preventDefault();
                 preventJump();
             }, { passive: false });
 
-            // 禁止多指縮放與橡皮筋
+            // 徹底禁止觸摸滑動，避免橡皮筋與跳動
             document.addEventListener('touchmove', (e) => {
-                e.preventDefault();
+                if (e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                }
             }, { passive: false });
         });
     </script>
