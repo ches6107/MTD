@@ -6,7 +6,7 @@
     <title>比例計算工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 強制鎖定 html 與 body 不可滾動 */
+        /* 完全鎖定底層，禁止所有滾動 */
         html, body {
             overflow: hidden;
             position: fixed;
@@ -14,7 +14,10 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            -webkit-overflow-scrolling: touch;
+            background-color: white;
+            /* 避免 iOS 橡皮筋回彈 */
+            -webkit-overflow-scrolling: none;
+            touch-action: none;
         }
 
         input::-webkit-outer-spin-button,
@@ -24,7 +27,10 @@
         }
         input[type=number] {
             -moz-appearance: textfield;
+            /* 避免手機點擊時的放大縮小預設行為 */
+            font-size: 16px; 
         }
+        
         .input-box {
             border: 3px solid black;
             width: 100px;
@@ -34,22 +40,26 @@
             font-weight: bold;
             outline: none;
             border-radius: 4px;
+            /* 針對點擊後的背景變化 */
+            transition: background-color 0.1s;
         }
         
+        /* 使用絕對定位將內容固定在頂部，不隨視窗高度變化而移動 */
         .main-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 100%;
-            width: 100%;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
         }
 
         /* 針對手機端的優化 */
         @media (max-width: 640px) {
             .main-container {
-                justify-content: flex-start !important;
                 padding-top: 1.5rem !important;
             }
             .input-box {
@@ -151,6 +161,8 @@
             margin-left: 136px;
             align-self: flex-start;
             flex-shrink: 0;
+            /* 避免點擊按鈕後頁面彈跳 */
+            touch-action: manipulation;
         }
         .reset-btn:hover {
             background-color: #dc2626;
@@ -230,12 +242,14 @@
     </div>
 
     <script>
-        // 處理焦點，清空數值並強制視窗不滾動
+        // 處理焦點，避免鍵盤彈出引起的捲動
         function handleFocus(el) {
             el.value = '';
-            // 強制捲動回頂部，防止 iOS/Android 的自動位移
-            window.scrollTo(0, 0);
-            document.body.scrollTop = 0;
+            // 強制畫面維持在最上方
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+            }, 0);
         }
 
         function resetAll() {
@@ -307,11 +321,14 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             calculate();
-            // 監聽所有捲動事件並強制歸零
+            
+            // 全域攔截捲動與縮放
+            document.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 1) e.preventDefault();
+            }, { passive: false });
+
             window.addEventListener('scroll', (e) => {
-                if (window.scrollY !== 0) {
-                    window.scrollTo(0, 0);
-                }
+                window.scrollTo(0, 0);
             }, { passive: false });
         });
     </script>
